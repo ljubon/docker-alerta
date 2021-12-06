@@ -7,10 +7,11 @@ ENV PIP_NO_CACHE_DIR=1
 ARG BUILD_DATE=now
 ARG VCS_REF
 ARG VERSION
+ARG WEBUI_VERSION
 
-ENV SERVER_VERSION=${VERSION}
+ENV SERVER_VERSION=$VERSION
 ENV CLIENT_VERSION=8.5.1
-ENV WEBUI_VERSION=8.7.0
+ENV WEBUI_VERSION=$WEBUI_VERSION
 
 ENV NGINX_WORKER_PROCESSES=1
 ENV NGINX_WORKER_CONNECTIONS=1024
@@ -26,7 +27,7 @@ ENV HK_INFO_DELETE_HRS=12
 LABEL maintainer="Nick Satterly <nick.satterly@gmail.com>"
 LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.url="https://alerta.io" \
-      org.label-schema.vcs-url="https://github.com/alerta/docker-alerta" \
+      org.label-schema.vcs-url="https://github.com/g-research/docker-alerta" \
       org.label-schema.vcs-ref=$VCS_REF \
       org.label-schema.version=$VERSION \
       org.label-schema.schema-version="1.0.0-rc.1"
@@ -84,7 +85,7 @@ COPY install-plugins.sh /app/install-plugins.sh
 COPY plugins.txt /app/plugins.txt
 RUN /app/install-plugins.sh
 
-ADD https://github.com/alerta/alerta-webui/releases/download/v${WEBUI_VERSION}/alerta-webui.tar.gz /tmp/webui.tar.gz
+ADD https://github.com/g-research/alerta-webui/releases/download/${WEBUI_VERSION}/alerta-webui.tar.gz /tmp/webui.tar.gz
 RUN tar zxvf /tmp/webui.tar.gz -C /tmp && \
     mv /tmp/dist /web
 
