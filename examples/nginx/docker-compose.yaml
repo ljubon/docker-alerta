@@ -27,6 +27,8 @@ services:
     image: alerta/alerta-web  # use API in "alerta-web" image
     depends_on:
       - db
+    ports:
+      - "8080:8080"
     volumes:
       - ./api/alertad.conf:/app/alertad.conf
     environment:
