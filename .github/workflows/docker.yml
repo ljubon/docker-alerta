@@ -6,52 +6,54 @@ on:
       - v*
 
 env:
-  REPOSITORY_URL: registry.hub.docker.com
-  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  REPOSITORY_URL: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  test:
-    uses: alerta/docker-alerta/.github/workflows/test.yml@master
-    secrets: 
-      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
-
   push:
-    needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
-    env:
-      IMAGE_NAME: alerta/alerta-web
+    # Can be removed with PAT or Token with fine-graind permissions with write organization package
+    permissions: 
+      packages: write
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Variables
+      - name: Set variables
         id: vars
-        run: echo "::set-output name=SHORT_COMMIT_ID::$(git rev-parse --short HEAD)"
-      - name: Build Image
-        id: docker-build
-        run: >-
-          docker build
-          --build-arg VCS_REF=${{ github.sha }}
-          --build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          --build-arg VERSION=$(cat VERSION)
-          -t $IMAGE_NAME
-          -t $REPOSITORY_URL/$IMAGE_NAME:$(cat VERSION)
-          -t $REPOSITORY_URL/$IMAGE_NAME:${{ steps.vars.outputs.SHORT_COMMIT_ID }}
-          -t $REPOSITORY_URL/$IMAGE_NAME:latest .
-      - uses: docker/login-action@v1
+        run: |
+          echo "SHORT_COMMIT_ID=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+          echo "BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
+          echo "VERSION=$(cat VERSION)" >> $GITHUB_OUTPUT
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
         with:
           registry: ${{ env.REPOSITORY_URL }}
           username: ${{ github.actor }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-      - name: Publish Image
-        id: docker-push
-        run: |
-          docker push $REPOSITORY_URL/$IMAGE_NAME:$(cat VERSION)
-          docker push $REPOSITORY_URL/$IMAGE_NAME:${{ steps.vars.outputs.SHORT_COMMIT_ID }}
-          docker push $REPOSITORY_URL/$IMAGE_NAME:latest
-
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set image tags
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REPOSITORY_URL }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+            type=raw,value=${{ steps.vars.outputs.VERSION }}
+            type=raw,value=${{ steps.vars.outputs.SHORT_COMMIT_ID }}
+      - name: Build & Push Image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          build-args: |
+            VCS_REF=${{ github.sha }}
+            BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
+            VERSION=${{ steps.vars.outputs.VERSION }}
+          tags: ${{ steps.meta.outputs.tags }}
+          push: true
       - uses: act10ns/slack@v1
+        if: always()
         with: 
           status: ${{ job.status }}
           steps: ${{ toJson(steps) }}
-        if: always()
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
