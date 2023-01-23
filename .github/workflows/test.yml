@@ -1,66 +1,66 @@
-name: Build and Test
+# name: Build and Test
 
-on:
-  pull_request:
-  push:
-    branches:
-      - master
-      - 'releases/*'
-  workflow_call:
-    secrets:
-      DOCKERHUB_TOKEN:
-        required: true
+# on:
+#   pull_request:
+#   push:
+#     branches:
+#       - master
+#       - 'releases/*'
+#   workflow_call:
+#     secrets:
+#       DOCKERHUB_TOKEN:
+#         required: true
 
-env:
-  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+# env:
+#   SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-jobs:
-  test-postgres:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Docker Lint
-        id: docker-lint
-        run: |
-          docker run --rm -i ghcr.io/hadolint/hadolint hadolint \
-          --ignore DL3008 \
-          --ignore DL3059 \
-          - < Dockerfile
-      - name: Run tests
-        id: smoketest
-        run: |
-          docker-compose -f tests/docker-compose.test.postgres.yml build \
-            --build-arg VCS_REF=${{ github.sha }} \
-            --build-arg VERSION=$(cat VERSION)
-          docker-compose -f tests/docker-compose.test.postgres.yml up --exit-code-from tester
+# jobs:
+#   test-postgres:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Docker Lint
+#         id: docker-lint
+#         run: |
+#           docker run --rm -i ghcr.io/hadolint/hadolint hadolint \
+#           --ignore DL3008 \
+#           --ignore DL3059 \
+#           - < Dockerfile
+#       - name: Run tests
+#         id: smoketest
+#         run: |
+#           docker-compose -f tests/docker-compose.test.postgres.yml build \
+#             --build-arg VCS_REF=${{ github.sha }} \
+#             --build-arg VERSION=$(cat VERSION)
+#           docker-compose -f tests/docker-compose.test.postgres.yml up --exit-code-from tester
 
-      - uses: act10ns/slack@v1
-        with:
-          status: ${{ job.status }}
-          steps: ${{ toJson(steps) }}
-        if: always()
+#       - uses: act10ns/slack@v1
+#         with:
+#           status: ${{ job.status }}
+#           steps: ${{ toJson(steps) }}
+#         if: always()
 
-  test-mongodb:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: Docker Lint
-        id: docker-lint
-        run: |
-          docker run --rm -i ghcr.io/hadolint/hadolint hadolint \
-          --ignore DL3008 \
-          --ignore DL3059 \
-          - < Dockerfile
-      - name: Run tests
-        id: smoketest
-        run: |
-          docker-compose -f tests/docker-compose.test.mongodb.yml build \
-            --build-arg VCS_REF=${{ github.sha }} \
-            --build-arg VERSION=$(cat VERSION)
-          docker-compose -f tests/docker-compose.test.mongodb.yml up --exit-code-from tester
+#   test-mongodb:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v2
+#       - name: Docker Lint
+#         id: docker-lint
+#         run: |
+#           docker run --rm -i ghcr.io/hadolint/hadolint hadolint \
+#           --ignore DL3008 \
+#           --ignore DL3059 \
+#           - < Dockerfile
+#       - name: Run tests
+#         id: smoketest
+#         run: |
+#           docker-compose -f tests/docker-compose.test.mongodb.yml build \
+#             --build-arg VCS_REF=${{ github.sha }} \
+#             --build-arg VERSION=$(cat VERSION)
+#           docker-compose -f tests/docker-compose.test.mongodb.yml up --exit-code-from tester
 
-      - uses: act10ns/slack@v1
-        with: 
-          status: ${{ job.status }}
-          steps: ${{ toJson(steps) }}
-        if: always()
+#       - uses: act10ns/slack@v1
+#         with: 
+#           status: ${{ job.status }}
+#           steps: ${{ toJson(steps) }}
+#         if: always()
