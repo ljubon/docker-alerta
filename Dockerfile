@@ -1,3 +1,8 @@
+FROM node:14 AS gr-main
+RUN curl -Ls -O https://github.com/g-research/alerta-webui/archive/gr-main.zip && unzip gr-main.zip
+WORKDIR alerta-webui-gr-main
+RUN npm install && npm run build
+
 FROM python:3.8-slim-buster
 
 ENV PYTHONUNBUFFERED 1
@@ -85,9 +90,7 @@ COPY install-plugins.sh /app/install-plugins.sh
 COPY plugins.txt /app/plugins.txt
 RUN /app/install-plugins.sh
 
-ADD https://github.com/g-research/alerta-webui/releases/download/${WEBUI_VERSION}/alerta-webui.tar.gz /tmp/webui.tar.gz
-RUN tar zxvf /tmp/webui.tar.gz -C /tmp && \
-    mv /tmp/dist /web
+COPY --from=gr-main alerta-webui-gr-main/dist/* /web
 
 ENV ALERTA_SVR_CONF_FILE /app/alertad.conf
 ENV ALERTA_CONF_FILE /app/alerta.conf
