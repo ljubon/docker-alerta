@@ -1,10 +1,10 @@
 FROM node:14 AS gr-main
 
-ARG ALERTA_WEBUI_SHA
-ENV ALERTA_WEBUI_SHA=$ALERTA_WEBUI_SHA
-RUN curl -Ls -O https://github.com/g-research/alerta-webui/archive/${ALERTA_WEBUI_SHA}.zip && unzip ${ALERTA_WEBUI_SHA}.zip
-WORKDIR alerta-webui-${ALERTA_WEBUI_SHA}
-RUN npm install && npm run build
+ARG WEBUI_SHA
+ENV WEBUI_SHA=$WEBUI_SHA
+WORKDIR /tmp
+RUN curl -Ls -O https://github.com/g-research/alerta-webui/archive/$WEBUI_SHA.zip && unzip $WEBUI_SHA.zip
+RUN cd /tmp/alerta-webui-$WEBUI_SHA && npm install && npm run build
 
 FROM python:3.8-slim-buster
 
@@ -16,10 +16,12 @@ ARG BUILD_DATE=now
 ARG VCS_REF
 ARG VERSION
 ARG WEBUI_VERSION
+ARG WEBUI_SHA
 
 ENV SERVER_VERSION=$VERSION
 ENV CLIENT_VERSION=8.5.1
 ENV WEBUI_VERSION=$WEBUI_VERSION
+ENV WEBUI_SHA=$WEBUI_SHA
 
 ENV NGINX_WORKER_PROCESSES=1
 ENV NGINX_WORKER_CONNECTIONS=1024
@@ -93,7 +95,7 @@ COPY install-plugins.sh /app/install-plugins.sh
 COPY plugins.txt /app/plugins.txt
 RUN /app/install-plugins.sh
 
-COPY --from=gr-main alerta-webui-${ALERTA_WEBUI_SHA}/dist/* /web
+COPY --from=gr-main /tmp/alerta-webui-$WEBUI_SHA/dist/* /web
 
 ENV ALERTA_SVR_CONF_FILE /app/alertad.conf
 ENV ALERTA_CONF_FILE /app/alerta.conf
