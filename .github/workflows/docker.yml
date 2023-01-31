@@ -9,47 +9,43 @@ jobs:
     runs-on: ubuntu-latest
     environment: release
     env:
-      IMAGE_NAME: ${{ github.repository }}
+      IMAGE_NAME: gresearch/alerta
       WEBUI_SHA: e7575af4f3c38a6cdf9dbd1165b586a0849960c0
     steps:
       - name: Checkout docker-alerta
         uses: actions/checkout@v2
-        with:
-          fetch-depth: '0' 
       - name: Checkout alerta-webui
         uses: actions/checkout@v2
         with:
           repository: 'G-Research/alerta-webui'
           ref: 'gr-main'
-          fetch-depth: '0'
-          path: 'alerta-webui'
       - name: Verify SHA
         if: always()
         working-directory: alerta-webui
-        run: |
-          if [[ "0" -eq $(git merge-base --is-ancestor $WEBUI_SHA HEAD) ]]; then 
-            echo "true"; 
-          else 
-            echo "false"; 
-            exit 1
-          fi
+        run: git merge-base --is-ancestor $WEBUI_SHA gr-main
       - name: Set variables
         id: vars
         run: |
           echo "VERSION=$(cat VERSION)" >> $GITHUB_OUTPUT
-          echo "TAG=$(git describe --tags --abbrev=0)" >> $GITHUB_OUTPUT
           echo "BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
           echo "SHORT_COMMIT_ID=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-      - name: Set image tags
+      - name: Set Docker meta
         id: meta
         uses: docker/metadata-action@v4
         with:
           images: ${{ env.IMAGE_NAME }}
           tags: |
             type=raw,value=latest
-            type=raw,value=${{ steps.vars.outputs.TAG }}
             type=raw,value=${{ steps.vars.outputs.VERSION }}
             type=raw,value=${{ steps.vars.outputs.SHORT_COMMIT_ID }}
+          labels: |
+            maintainer="Nick Satterly <nick.satterly@gmail.com>"
+            org.label-schema.build-date=${{ steps.vars.outputs.BUILD_DATE }} \
+            org.label-schema.url="https://alerta.io" \
+            org.label-schema.vcs-url="https://github.com/g-research/docker-alerta" \
+            org.label-schema.vcs-ref=${{ steps.vars.outputs.SHORT_COMMIT_ID }} \
+            org.label-schema.version=${{ steps.vars.outputs.VERSION }} \
+            org.label-schema.schema-version="1.0.0-rc.1"
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:
@@ -60,10 +56,7 @@ jobs:
         with:
           context: .
           build-args: |
-            VERSION=${{ steps.vars.outputs.VERSION }}
-            WEBUI_VERSION=${{ steps.vars.outputs.TAG }}
-            VCS_REF=${{ steps.vars.outputs.SHORT_COMMIT_ID }}
-            BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
             WEBUI_SHA=${{ env.WEBUI_SHA }}
+            VERSION=${{ steps.vars.outputs.VERSION }}
           tags: ${{ steps.meta.outputs.tags }}
           push: ${{ github.ref_protected }} # only for protected branches

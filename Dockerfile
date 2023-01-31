@@ -1,7 +1,6 @@
 FROM node:14 AS gr-main
 
 ARG WEBUI_SHA
-ENV WEBUI_SHA=$WEBUI_SHA
 WORKDIR /tmp
 RUN curl -Ls -O https://github.com/g-research/alerta-webui/archive/$WEBUI_SHA.zip && unzip $WEBUI_SHA.zip
 RUN cd /tmp/alerta-webui-$WEBUI_SHA && npm install && npm run build
@@ -12,15 +11,11 @@ ENV PYTHONUNBUFFERED 1
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 ENV PIP_NO_CACHE_DIR=1
 
-ARG BUILD_DATE=now
-ARG VCS_REF
 ARG VERSION
-ARG WEBUI_VERSION
 ARG WEBUI_SHA
 
 ENV SERVER_VERSION=$VERSION
 ENV CLIENT_VERSION=8.5.1
-ENV WEBUI_VERSION=$WEBUI_VERSION
 ENV WEBUI_SHA=$WEBUI_SHA
 
 ENV NGINX_WORKER_PROCESSES=1
@@ -33,14 +28,6 @@ ENV UWSGI_BUFFER_SIZE=8192
 ENV HEARTBEAT_SEVERITY=major
 ENV HK_EXPIRED_DELETE_HRS=2
 ENV HK_INFO_DELETE_HRS=12
-
-LABEL maintainer="Nick Satterly <nick.satterly@gmail.com>"
-LABEL org.label-schema.build-date=$BUILD_DATE \
-      org.label-schema.url="https://alerta.io" \
-      org.label-schema.vcs-url="https://github.com/g-research/docker-alerta" \
-      org.label-schema.vcs-ref=$VCS_REF \
-      org.label-schema.version=$VERSION \
-      org.label-schema.schema-version="1.0.0-rc.1"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
