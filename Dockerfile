@@ -2,8 +2,12 @@ FROM node:14 AS gr-main
 
 ARG WEBUI_SHA
 WORKDIR /tmp
-RUN curl -Ls -O https://github.com/g-research/alerta-webui/archive/$WEBUI_SHA.zip && unzip $WEBUI_SHA.zip
-RUN cd /tmp/alerta-webui-$WEBUI_SHA && npm install && npm run build
+RUN curl -Ls -O https://github.com/g-research/alerta-webui/archive/$WEBUI_SHA.zip \
+  && unzip $WEBUI_SHA.zip \
+  && rm $WEBUI_SHA.zip \
+  && cd alerta-webui-$WEBUI_SHA \
+  && npm install \
+  && npm run build
 
 FROM python:3.8-slim-buster
 
