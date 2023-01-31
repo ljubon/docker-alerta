@@ -18,16 +18,14 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: 'G-Research/alerta-webui'
-          ref: 'gr-main'
+          path: 'alerta-webui'
       - name: Verify SHA
-        if: always()
         working-directory: alerta-webui
         run: git merge-base --is-ancestor $WEBUI_SHA gr-main
       - name: Set variables
         id: vars
         run: |
           echo "VERSION=$(cat VERSION)" >> $GITHUB_OUTPUT
-          echo "BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')" >> $GITHUB_OUTPUT
           echo "SHORT_COMMIT_ID=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: Set Docker meta
         id: meta
@@ -38,15 +36,7 @@ jobs:
             type=raw,value=latest
             type=raw,value=${{ steps.vars.outputs.VERSION }}
             type=raw,value=${{ steps.vars.outputs.SHORT_COMMIT_ID }}
-          labels: |
-            maintainer="Nick Satterly <nick.satterly@gmail.com>"
-            org.label-schema.build-date=${{ steps.vars.outputs.BUILD_DATE }} \
-            org.label-schema.url="https://alerta.io" \
-            org.label-schema.vcs-url="https://github.com/g-research/docker-alerta" \
-            org.label-schema.vcs-ref=${{ steps.vars.outputs.SHORT_COMMIT_ID }} \
-            org.label-schema.version=${{ steps.vars.outputs.VERSION }} \
-            org.label-schema.schema-version="1.0.0-rc.1"
-      - name: Login to GitHub Container Registry
+      - name: Login to Docker Hub Container Registry
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -60,3 +50,4 @@ jobs:
             VERSION=${{ steps.vars.outputs.VERSION }}
           tags: ${{ steps.meta.outputs.tags }}
           push: ${{ github.ref_protected }} # only for protected branches
+          labels: ${{ steps.meta.outputs.labels }}
