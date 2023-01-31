@@ -10,6 +10,7 @@ jobs:
     environment: release
     env:
       IMAGE_NAME: ${{ github.repository }}
+      ALERTA_WEBUI_SHA: "e7575af4f3c38a6cdf9dbd1165b586a0849960c0"
     steps:
       - uses: actions/checkout@v2
         with:
@@ -45,5 +46,6 @@ jobs:
             WEBUI_VERSION=${{ steps.vars.outputs.TAG }}
             VCS_REF=${{ steps.vars.outputs.SHORT_COMMIT_ID }}
             BUILD_DATE=${{ steps.vars.outputs.BUILD_DATE }}
+            ALERTA_WEBUI_SHA=${{ env.ALERTA_WEBUI_SHA }}
           tags: ${{ steps.meta.outputs.tags }}
           push: ${{ github.ref_protected }} # only for protected branches
