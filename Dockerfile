@@ -95,7 +95,7 @@ COPY install-plugins.sh /app/install-plugins.sh
 COPY plugins.txt /app/plugins.txt
 RUN /app/install-plugins.sh
 
-COPY --from=gr-main /tmp/alerta-webui-$WEBUI_SHA/dist/* /web
+COPY --from=gr-main /tmp/alerta-webui-$WEBUI_SHA/dist /web
 
 ENV ALERTA_SVR_CONF_FILE /app/alertad.conf
 ENV ALERTA_CONF_FILE /app/alerta.conf
