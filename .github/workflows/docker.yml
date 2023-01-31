@@ -10,7 +10,6 @@ jobs:
     environment: release
     env:
       IMAGE_NAME: gresearch/alerta
-      WEBUI_SHA: e7575af4f3c38a6cdf9dbd1165b586a0849960c0
     steps:
       - name: Checkout docker-alerta
         uses: actions/checkout@v2
@@ -26,6 +25,7 @@ jobs:
         id: vars
         run: |
           echo "VERSION=$(cat VERSION)" >> $GITHUB_OUTPUT
+          echo "WEBUI_SHA=$(cat WEBUI_VERSION)" >> $GITHUB_OUTPUT
           echo "SHORT_COMMIT_ID=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: Set Docker meta
         id: meta

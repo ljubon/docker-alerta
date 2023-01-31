@@ -19,12 +19,17 @@ jobs:
           --ignore DL3059 \
           --ignore DL3003 \
           - < Dockerfile
+      - name: Set variables
+        id: vars
+        run: |
+          echo "VERSION=$(cat VERSION)" >> $GITHUB_OUTPUT
+          echo "WEBUI_SHA=$(cat WEBUI_VERSION)" >> $GITHUB_OUTPUT
       - name: Run tests
         id: smoketest
         run: |
           docker-compose -f tests/docker-compose.test.postgres.yml build \
-            --build-arg VCS_REF=${{ github.sha }} \
-            --build-arg VERSION=$(cat VERSION)
+            --build-arg VERSION=${{ steps.vars.outputs.VERSION }} \
+            --build-arg WEBUI_SHA=${{ steps.vars.outputs.WEBUI_SHA }}
           docker-compose -f tests/docker-compose.test.postgres.yml up --exit-code-from tester
 
   test-mongodb:
@@ -39,10 +44,15 @@ jobs:
           --ignore DL3059 \
           --ignore DL3003 \
           - < Dockerfile
+      - name: Set variables
+        id: vars
+        run: |
+          echo "VERSION=$(cat VERSION)" >> $GITHUB_OUTPUT
+          echo "WEBUI_SHA=$(cat WEBUI_VERSION)" >> $GITHUB_OUTPUT
       - name: Run tests
         id: smoketest
         run: |
           docker-compose -f tests/docker-compose.test.mongodb.yml build \
-            --build-arg VCS_REF=${{ github.sha }} \
-            --build-arg VERSION=$(cat VERSION)
+            --build-arg VERSION=${{ steps.vars.outputs.VERSION }} \
+            --build-arg WEBUI_SHA=${{ steps.vars.outputs.WEBUI_SHA }}
           docker-compose -f tests/docker-compose.test.mongodb.yml up --exit-code-from tester
