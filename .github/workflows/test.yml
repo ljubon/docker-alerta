@@ -25,7 +25,7 @@ jobs:
         id: vars
         run: |
           echo "VERSION=$(cat VERSION)" >> $GITHUB_OUTPUT
-          echo "CONTRIB_SHA=$(cat CONTRIB_SHA)" >> $GITHUB_OUTPUT
+          echo "CONTRIB_SHA=$(cat CONTRIB_VERSION)" >> $GITHUB_OUTPUT
           echo "WEBUI_SHA=$(cat WEBUI_VERSION)" >> $GITHUB_OUTPUT
       - name: Run tests
         id: smoketest
@@ -53,7 +53,7 @@ jobs:
         run: |
           echo "VERSION=$(cat VERSION)" >> $GITHUB_OUTPUT
           echo "WEBUI_SHA=$(cat WEBUI_VERSION)" >> $GITHUB_OUTPUT
-          echo "CONTRIB_SHA=$(cat CONTRIB_SHA)" >> $GITHUB_OUTPUT
+          echo "CONTRIB_SHA=$(cat CONTRIB_VERSION)" >> $GITHUB_OUTPUT
       - name: Run tests
         id: smoketest
         run: |
