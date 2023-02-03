@@ -2,14 +2,14 @@ name: Push to DockerHub
 
 on:
   push:
-    branches: [ 'gr-main', 'gr-oss-330-alerta-contrib' ]
+    branches: [ 'gr-main' ]
 
 jobs:
   push:
     runs-on: ubuntu-latest
     environment: release
     env:
-      IMAGE_NAME: ljubon/alerta
+      IMAGE_NAME: gresearch/alerta
     steps:
       - name: Checkout docker-alerta
         uses: actions/checkout@v2
@@ -21,7 +21,7 @@ jobs:
       - name: Checkout alerta-contrib
         uses: actions/checkout@v2
         with:
-          repository: 'ljubon/alerta-contrib'
+          repository: 'g-research/alerta-contrib'
           path: 'alerta-contrib'
       - name: Set variables
         id: vars

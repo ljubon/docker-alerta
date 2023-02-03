@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - gr-main
-      - gr-oss-330-alerta-contrib
 
 jobs:
   test-postgres:
