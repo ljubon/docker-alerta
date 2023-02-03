@@ -16,10 +16,12 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 ENV PIP_NO_CACHE_DIR=1
 
 ARG WEBUI_SHA
+ARG CONTRIB_SHA
 
 ENV SERVER_VERSION=8.7.0
 ENV CLIENT_VERSION=8.5.1
 ENV WEBUI_SHA=$WEBUI_SHA
+ENV CONTRIB_SHA=$CONTRIB_SHA
 
 ENV NGINX_WORKER_PROCESSES=1
 ENV NGINX_WORKER_CONNECTIONS=1024
@@ -71,7 +73,7 @@ RUN curl -fsSL https://www.mongodb.org/static/pgp/server-4.2.asc | apt-key add -
     apt-get -y autoremove && \
     rm -rf /var/lib/apt/lists/*
 
-COPY requirements*.txt /app/
+COPY requirements*.txt install-plugins.sh plugins.txt /app/ 
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir pip virtualenv jinja2 && \
     python3 -m venv /venv && \
@@ -81,9 +83,8 @@ RUN pip install --no-cache-dir pip virtualenv jinja2 && \
 ENV PATH $PATH:/venv/bin
 
 RUN /venv/bin/pip install alerta==${CLIENT_VERSION} alerta-server==${SERVER_VERSION}
-COPY install-plugins.sh /app/install-plugins.sh
-COPY plugins.txt /app/plugins.txt
-RUN /app/install-plugins.sh
+RUN sed -i "s/gr-main/$CONTRIB_SHA/g" /app/plugins.txt && \
+    bash -x /app/install-plugins.sh
 
 COPY --from=gr-main /tmp/alerta-webui-$WEBUI_SHA/dist /web
 
