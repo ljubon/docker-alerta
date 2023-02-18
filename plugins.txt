@@ -5,6 +5,7 @@ plugins/dingtalk gr-main
 plugins/enhance gr-main
 plugins/geoip gr-main
 plugins/influxdb gr-main
+plugins/jira gr-main
 plugins/logstash gr-main
 plugins/mattermost gr-main
 plugins/msteams gr-main
