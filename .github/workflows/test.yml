@@ -26,13 +26,17 @@ jobs:
           echo "VERSION=$(cat VERSION)" >> $GITHUB_OUTPUT
           echo "CONTRIB_SHA=$(cat CONTRIB_VERSION)" >> $GITHUB_OUTPUT
           echo "WEBUI_SHA=$(cat WEBUI_VERSION)" >> $GITHUB_OUTPUT
+          echo "CLIENT_SHA=$(cat CLIENT_VERSION)" >> $GITHUB_OUTPUT
+          echo "SERVER_SHA=$(cat SERVER_VERSION)" >> $GITHUB_OUTPUT
       - name: Run tests
         id: smoketest
         run: |
           docker-compose -f tests/docker-compose.test.postgres.yml build \
             --build-arg VERSION=${{ steps.vars.outputs.VERSION }} \
             --build-arg WEBUI_SHA=${{ steps.vars.outputs.WEBUI_SHA }} \
-            --build-arg CONTRIB_SHA=${{ steps.vars.outputs.CONTRIB_SHA }}
+            --build-arg CONTRIB_SHA=${{ steps.vars.outputs.CONTRIB_SHA }} \
+            --build-arg CLIENT_SHA=${{ steps.vars.outputs.CLIENT_SHA }} \
+            --build-arg SERVER_SHA=${{ steps.vars.outputs.SERVER_SHA }}
           docker-compose -f tests/docker-compose.test.postgres.yml up --exit-code-from tester
 
   test-mongodb:
@@ -53,11 +57,15 @@ jobs:
           echo "VERSION=$(cat VERSION)" >> $GITHUB_OUTPUT
           echo "WEBUI_SHA=$(cat WEBUI_VERSION)" >> $GITHUB_OUTPUT
           echo "CONTRIB_SHA=$(cat CONTRIB_VERSION)" >> $GITHUB_OUTPUT
+          echo "CLIENT_SHA=$(cat CLIENT_VERSION)" >> $GITHUB_OUTPUT
+          echo "SERVER_SHA=$(cat SERVER_VERSION)" >> $GITHUB_OUTPUT
       - name: Run tests
         id: smoketest
         run: |
           docker-compose -f tests/docker-compose.test.mongodb.yml build \
             --build-arg VERSION=${{ steps.vars.outputs.VERSION }} \
             --build-arg WEBUI_SHA=${{ steps.vars.outputs.WEBUI_SHA }} \
-            --build-arg CONTRIB_SHA=${{ steps.vars.outputs.CONTRIB_SHA }}
+            --build-arg CONTRIB_SHA=${{ steps.vars.outputs.CONTRIB_SHA }} \
+            --build-arg CLIENT_SHA=${{ steps.vars.outputs.CLIENT_SHA }} \
+            --build-arg SERVER_SHA=${{ steps.vars.outputs.SERVER_SHA }}
           docker-compose -f tests/docker-compose.test.mongodb.yml up --exit-code-from tester
