@@ -23,12 +23,24 @@ jobs:
         with:
           repository: 'g-research/alerta-contrib'
           path: 'alerta-contrib'
+      - name: Checkout alerta
+        uses: actions/checkout@v2
+        with:
+          repository: 'g-research/alerta'
+          path: 'alerta'
+      - name: Checkout alerta-client
+        uses: actions/checkout@v2
+        with:
+          repository: 'g-research/python-alerta-client'
+          path: 'alerta-client'
       - name: Set variables
         id: vars
         run: |
           echo "VERSION=$(cat VERSION)" >> $GITHUB_OUTPUT
           echo "WEBUI_SHA=$(cat WEBUI_VERSION)" >> $GITHUB_OUTPUT
           echo "CONTRIB_SHA=$(cat CONTRIB_VERSION)" >> $GITHUB_OUTPUT
+          echo "CLIENT_SHA=$(cat CLIENT_VERSION)" >> $GITHUB_OUTPUT
+          echo "SERVER_SHA=$(cat SERVER_VERSION)" >> $GITHUB_OUTPUT
           echo "SHORT_COMMIT_ID=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
       - name: Verify SHA - alerta-webui
         working-directory: alerta-webui
@@ -36,6 +48,12 @@ jobs:
       - name: Verify SHA - alerta-contrib
         working-directory: alerta-contrib
         run: git merge-base --is-ancestor ${{ steps.vars.outputs.CONTRIB_SHA }} gr-main
+      - name: Verify SHA - alerta
+        working-directory: alerta
+        run: git merge-base --is-ancestor ${{ steps.vars.outputs.SERVER_SHA }} gr-main
+      - name: Verify SHA - alerta-client
+        working-directory: alerta-client
+        run: git merge-base --is-ancestor ${{ steps.vars.outputs.CLIENT_SHA }} gr-main
       - name: Set Docker meta
         id: meta
         uses: docker/metadata-action@v4
@@ -57,6 +75,8 @@ jobs:
           build-args: |
             WEBUI_SHA=${{ steps.vars.outputs.WEBUI_SHA }}
             CONTRIB_SHA=${{ steps.vars.outputs.CONTRIB_SHA }}
+            CLIENT_SHA=${{ steps.vars.outputs.CLIENT_SHA }}
+            SERVER_SHA=${{ steps.vars.outputs.SERVER_SHA }}
           tags: ${{ steps.meta.outputs.tags }}
           push: ${{ github.ref_protected }} # only for protected branches
           labels: ${{ steps.meta.outputs.labels }}
