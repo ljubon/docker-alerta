@@ -13,12 +13,14 @@ FROM python:3.8-slim-buster
 
 ARG WEBUI_SHA
 ARG CONTRIB_SHA
+ARG CLIENT_SHA
+ARG SERVER_SHA
 
 ENV PYTHONUNBUFFERED=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1 \
-    SERVER_VERSION=8.7.0 \
-    CLIENT_VERSION=8.5.1 \
+    SERVER_VERSION=$SERVER_SHA \
+    CLIENT_VERSION=$CLIENT_SHA \
     WEBUI_SHA=$WEBUI_SHA \
     CONTRIB_SHA=$CONTRIB_SHA \
     NGINX_WORKER_PROCESSES=1 \
@@ -66,7 +68,9 @@ RUN pip install --no-cache-dir pip virtualenv jinja2 && \
     /venv/bin/pip install --no-cache-dir --requirement /app/requirements-docker.txt
 ENV PATH $PATH:/venv/bin
 
-RUN /venv/bin/pip install alerta==${CLIENT_VERSION} alerta-server==${SERVER_VERSION} && \
+RUN /venv/bin/pip3 install \
+    git+https://github.com/g-research/python-alerta-client.git@${CLIENT_VERSION} \
+    git+https://github.com/g-research/alerta.git@${SERVER_VERSION} && \
     sed -i "s/gr-main/$CONTRIB_SHA/g" /app/plugins.txt && \
     bash -x /app/install-plugins.sh
 
