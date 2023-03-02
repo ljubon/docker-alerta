@@ -1,5 +1,6 @@
 plugins/alertops gr-main
 plugins/amqp gr-main
+plugins/blackout-regex gr-main
 plugins/cachet gr-main
 plugins/dingtalk gr-main
 plugins/enhance gr-main
